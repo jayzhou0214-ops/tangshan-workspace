@@ -400,7 +400,7 @@ function scoreCardsChart(id,data){
     b+=`<text x="${x+102}" y="${y+70}" fill="${C.muted}" font-size="13" font-weight="800">分</text>`;
     b+=`<text x="${x+16}" y="${y+94}" fill="${C.muted}" font-size="12">${esc(r['样板角色'])}</text>`;
     let sx=x+16, sy=y+114, maxW=cardW-32;
-    parts.forEach((p,idx)=>{const w=Math.max(3,p/100*maxW*2.45); b+=`<rect x="${sx}" y="${sy}" width="${Math.min(w,maxW-(sx-x-16))}" height="10" rx="5" fill="${colors[idx]}" opacity=".88"/>`; sx+=Math.min(w,maxW-(sx-x-16))+3;});
+    parts.forEach((p,idx)=>{const remain=maxW-(sx-x-16); if(remain>0){const w=Math.max(3,p/100*maxW*2.45),segW=Math.max(0,Math.min(w,remain)); b+=`<rect x="${sx}" y="${sy}" width="${segW}" height="10" rx="5" fill="${colors[idx]}" opacity=".88"/>`; sx+=segW+3;}});
     const lines=[
       `补货空间 ${fmt.s(r['有开瓶0进货转化机会分'])}`,
       `双活跃 ${fmt.s(r['双活跃终端质量分'])}`,
