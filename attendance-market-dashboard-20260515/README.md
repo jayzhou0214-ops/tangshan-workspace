@@ -44,20 +44,14 @@ http://127.0.0.1:4173/prototype/index.html
 
 如需重新生成，可运行项目中的截图脚本或使用 Playwright 打开页面后按对应锚点截图。
 
-## 发布链接
+## 永久公开链接
 
-已通过现有公开 GitHub Pages 仓库发布到独立目录：
+已通过公开 GitHub Pages 仓库发布到独立目录。以下为正式交付链接，可长期访问；只要 GitHub 仓库保持公开且 Pages 未关闭，链接持续有效。
 
 ```text
 网页预览：https://jayzhou0214-ops.github.io/tangshan-workspace/attendance-market-dashboard-20260515/prototype/
 交付包下载：https://jayzhou0214-ops.github.io/tangshan-workspace/attendance-market-dashboard-20260515/考勤与市场投入管控看板交付包.zip
+GitHub 仓库目录：https://github.com/jayzhou0214-ops/tangshan-workspace/tree/main/attendance-market-dashboard-20260515
 ```
 
-备用 72 小时公开临时链接：
-
-```text
-网页预览：https://litter.catbox.moe/lvlaxo.html
-交付包下载：https://litter.catbox.moe/42woyk.zip
-```
-
-说明：本机可用 GitHub REST token 创建新仓库和 Contents API 写入时返回 403，因此改用已存在且可推送的公开 Pages 仓库 `jayzhou0214-ops/tangshan-workspace` 发布。
+说明：本机可用 GitHub REST token 创建新仓库和 Contents API 写入时返回 403，因此改用已存在且可推送的公开 Pages 仓库 `jayzhou0214-ops/tangshan-workspace` 发布，避免使用临时外链作为正式交付。
