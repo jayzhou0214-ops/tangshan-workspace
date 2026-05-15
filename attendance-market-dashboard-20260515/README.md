@@ -50,6 +50,8 @@ http://127.0.0.1:4173/prototype/index.html
 
 ```text
 网页预览：https://jayzhou0214-ops.github.io/tangshan-workspace/attendance-market-dashboard-20260515/prototype/
+优化方案详细版：https://jayzhou0214-ops.github.io/tangshan-workspace/attendance-market-dashboard-20260515/docs/?doc=detail
+优化方案领导版：https://jayzhou0214-ops.github.io/tangshan-workspace/attendance-market-dashboard-20260515/docs/?doc=leader
 交付包下载：https://jayzhou0214-ops.github.io/tangshan-workspace/attendance-market-dashboard-20260515/考勤与市场投入管控看板交付包.zip
 GitHub 仓库目录：https://github.com/jayzhou0214-ops/tangshan-workspace/tree/main/attendance-market-dashboard-20260515
 ```

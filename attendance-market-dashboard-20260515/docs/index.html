@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>考勤与市场投入管控看板优化方案</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --paper: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #e4e8f0;
+      --blue: #1f5eff;
+      --navy: #081524;
+      --gold: #b88935;
+      --red: #d92d20;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+      line-height: 1.72;
+      letter-spacing: 0;
+    }
+
+    .hero {
+      background:
+        linear-gradient(135deg, rgba(8, 21, 36, 0.96), rgba(13, 35, 59, 0.94)),
+        radial-gradient(circle at 78% 18%, rgba(184, 137, 53, 0.18), transparent 34%);
+      color: #fff;
+      padding: 34px 28px 28px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .hero-inner,
+    .shell {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      color: #e4c17d;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      color: #c9d6e6;
+      max-width: 860px;
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .tab,
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #eaf1fb;
+      background: rgba(255, 255, 255, 0.08);
+      text-decoration: none;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      color: #081524;
+      background: #e4c17d;
+      border-color: #e4c17d;
+      font-weight: 700;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 20px;
+      padding: 24px 0 44px;
+      align-items: start;
+    }
+
+    .doc,
+    .side-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 14px 38px rgba(18, 32, 53, 0.08);
+    }
+
+    .doc {
+      padding: 30px;
+      overflow: hidden;
+    }
+
+    .side {
+      position: sticky;
+      top: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .side-card {
+      padding: 16px;
+    }
+
+    .side-title {
+      margin: 0 0 10px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .side a {
+      display: block;
+      color: var(--blue);
+      text-decoration: none;
+      font-size: 13px;
+      margin: 8px 0;
+      word-break: break-all;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 8px 0 0;
+    }
+
+    .doc h1,
+    .doc h2,
+    .doc h3 {
+      color: #101828;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .doc h1 {
+      font-size: 28px;
+      margin: 0 0 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .doc h2 {
+      font-size: 21px;
+      margin: 30px 0 12px;
+      padding-left: 11px;
+      border-left: 4px solid var(--gold);
+    }
+
+    .doc h3 {
+      font-size: 17px;
+      margin: 22px 0 8px;
+    }
+
+    .doc p { margin: 10px 0; }
+
+    .doc blockquote {
+      margin: 16px 0;
+      padding: 12px 14px;
+      color: #344054;
+      background: #f8fafc;
+      border-left: 4px solid var(--blue);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .doc ul,
+    .doc ol {
+      padding-left: 22px;
+      margin: 10px 0 14px;
+    }
+
+    .doc li { margin: 5px 0; }
+
+    .doc table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+      display: block;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .doc th,
+    .doc td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 10px;
+      text-align: left;
+      vertical-align: top;
+      min-width: 120px;
+    }
+
+    .doc th {
+      background: #f2f5fa;
+      font-weight: 800;
+      color: #24324a;
+    }
+
+    .doc img {
+      width: 100%;
+      max-width: 980px;
+      display: block;
+      margin: 16px auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.12);
+    }
+
+    .doc code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: #eef2f7;
+      color: #24324a;
+      font-family: Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .error {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    @media (max-width: 920px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .side {
+        position: static;
+      }
+
+      .doc {
+        padding: 22px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">SmartBI 优化方案 / 公开评审入口</div>
+      <h1>考勤与市场投入管控看板优化方案</h1>
+      <p>同一套交付分为两个阅读版本：详细版面向工作人员、系统方、SmartBI 实施方；领导版面向公司领导，突出管理判断、异常定位和追踪问责。</p>
+      <nav class="tabs" aria-label="文档版本">
+        <a class="tab" id="tab-detail" href="?doc=detail">详细版</a>
+        <a class="tab" id="tab-leader" href="?doc=leader">领导版</a>
+        <a class="link-btn" href="../prototype/">打开看板原型</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell">
+    <article class="doc" id="doc">正在加载文档...</article>
+    <aside class="side">
+      <section class="side-card">
+        <h2 class="side-title">永久公开链接</h2>
+        <a id="detailLink" href="?doc=detail">详细版公开页面</a>
+        <a id="leaderLink" href="?doc=leader">领导版公开页面</a>
+        <a href="../prototype/">看板原型</a>
+        <a href="../考勤与市场投入管控看板交付包.zip">交付包下载</a>
+        <p class="note">托管于公开 GitHub Pages。仓库保持公开且 Pages 开启时，链接长期有效。</p>
+      </section>
+      <section class="side-card">
+        <h2 class="side-title">原始文件</h2>
+        <a id="rawMd" href="#">查看 Markdown 原文</a>
+        <a href="SmartBI实施清单.md">SmartBI 实施清单</a>
+        <a href="数据字段与指标口径清单.md">数据字段与指标口径清单</a>
+      </section>
+    </aside>
+  </main>
+
+  <script>
+    const docs = {
+      detail: {
+        title: "详细版",
+        file: "考勤与市场投入管控看板优化方案_详细版.md"
+      },
+      leader: {
+        title: "领导版",
+        file: "考勤与市场投入管控看板优化方案_领导版.md"
+      }
+    };
+
+    const params = new URLSearchParams(location.search);
+    const key = docs[params.get("doc")] ? params.get("doc") : "detail";
+    const current = docs[key];
+    document.title = current.title + " - 考勤与市场投入管控看板优化方案";
+    document.getElementById("tab-" + key).classList.add("active");
+    document.getElementById("rawMd").href = current.file;
+
+    const base = location.href.split("?")[0];
+    document.getElementById("detailLink").href = base + "?doc=detail";
+    document.getElementById("leaderLink").href = base + "?doc=leader";
+
+    fetch(current.file)
+      .then(response => {
+        if (!response.ok) throw new Error("文档加载失败：" + response.status);
+        return response.text();
+      })
+      .then(markdown => {
+        document.getElementById("doc").innerHTML = renderMarkdown(markdown);
+      })
+      .catch(error => {
+        document.getElementById("doc").innerHTML = '<p class="error">' + escapeHtml(error.message) + '</p>';
+      });
+
+    function renderMarkdown(markdown) {
+      const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+      let html = "";
+      let inList = false;
+      let listType = "";
+      let inQuote = false;
+      let tableRows = [];
+
+      function closeList() {
+        if (inList) {
+          html += "</" + listType + ">";
+          inList = false;
+          listType = "";
+        }
+      }
+
+      function closeQuote() {
+        if (inQuote) {
+          html += "</blockquote>";
+          inQuote = false;
+        }
+      }
+
+      function flushTable() {
+        if (!tableRows.length) return;
+        html += "<table>";
+        tableRows.forEach((row, index) => {
+          if (index === 1 && row.every(cell => /^:?-{3,}:?$/.test(cell.trim()))) return;
+          const tag = index === 0 ? "th" : "td";
+          html += "<tr>" + row.map(cell => "<" + tag + ">" + inline(cell.trim()) + "</" + tag + ">").join("") + "</tr>";
+        });
+        html += "</table>";
+        tableRows = [];
+      }
+
+      for (const raw of lines) {
+        const line = raw.trimEnd();
+        const trimmed = line.trim();
+
+        if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+          closeList();
+          closeQuote();
+          tableRows.push(trimmed.slice(1, -1).split("|"));
+          continue;
+        }
+        flushTable();
+
+        if (!trimmed) {
+          closeList();
+          closeQuote();
+          continue;
+        }
+
+        const heading = /^(#{1,4})\s+(.+)$/.exec(trimmed);
+        if (heading) {
+          closeList();
+          closeQuote();
+          const level = heading[1].length;
+          html += "<h" + level + ">" + inline(heading[2]) + "</h" + level + ">";
+          continue;
+        }
+
+        if (trimmed.startsWith(">")) {
+          closeList();
+          if (!inQuote) {
+            html += "<blockquote>";
+            inQuote = true;
+          }
+          html += "<p>" + inline(trimmed.replace(/^>\s?/, "")) + "</p>";
+          continue;
+        }
+
+        const unordered = /^[-*]\s+(.+)$/.exec(trimmed);
+        const ordered = /^\d+\.\s+(.+)$/.exec(trimmed);
+        if (unordered || ordered) {
+          closeQuote();
+          const nextType = unordered ? "ul" : "ol";
+          if (!inList || listType !== nextType) {
+            closeList();
+            html += "<" + nextType + ">";
+            inList = true;
+            listType = nextType;
+          }
+          html += "<li>" + inline((unordered || ordered)[1]) + "</li>";
+          continue;
+        }
+
+        closeList();
+        closeQuote();
+        html += "<p>" + inline(trimmed) + "</p>";
+      }
+
+      flushTable();
+      closeList();
+      closeQuote();
+      return html;
+    }
+
+    function inline(text) {
+      return escapeHtml(text)
+        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>
