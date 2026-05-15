@@ -1,0 +1,1527 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>考勤与市场投入管控驾驶舱</title>
+  <style>
+    :root {
+      --bg: #06111f;
+      --bg-soft: #0a1728;
+      --panel: rgba(14, 29, 49, 0.92);
+      --panel-2: rgba(18, 37, 60, 0.82);
+      --line: rgba(176, 199, 224, 0.16);
+      --text: #eef5ff;
+      --muted: #8fa3ba;
+      --gold: #d8b46a;
+      --cyan: #34d3b4;
+      --blue: #6fb5ff;
+      --amber: #f0a33a;
+      --red: #ef5b5b;
+      --green: #2fd17c;
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      background: #06111f;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+      background:
+        linear-gradient(135deg, rgba(9, 31, 51, 0.98), rgba(4, 12, 24, 0.98)),
+        radial-gradient(circle at 82% 8%, rgba(216, 180, 106, 0.12), transparent 30%),
+        radial-gradient(circle at 8% 18%, rgba(52, 211, 180, 0.10), transparent 34%);
+      letter-spacing: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 286px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 22px 18px;
+      border-right: 1px solid var(--line);
+      background: rgba(5, 15, 29, 0.84);
+      backdrop-filter: blur(18px);
+      overflow-y: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(216, 180, 106, 0.48);
+      background: linear-gradient(145deg, rgba(216, 180, 106, 0.22), rgba(52, 211, 180, 0.08));
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      color: var(--gold);
+      font-weight: 800;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .brand-sub {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .filter-group {
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .filter-label {
+      display: block;
+      color: #c9d8e8;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .filter-control {
+      width: 100%;
+      height: 38px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid rgba(176, 199, 224, 0.18);
+      border-radius: 8px;
+      padding: 0 10px;
+      outline: none;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #c7d6e8;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid transparent;
+      font-size: 13px;
+    }
+
+    .nav a:hover {
+      border-color: rgba(216, 180, 106, 0.35);
+      color: #fff;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .subhead {
+      margin-top: 10px;
+      color: var(--muted);
+      max-width: 820px;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .status-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: #c8d7e8;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--cyan);
+      box-shadow: 0 0 12px currentColor;
+    }
+
+    .dot.warn { background: var(--amber); }
+    .dot.danger { background: var(--red); }
+    .dot.gold { background: var(--gold); }
+
+    .section {
+      margin-bottom: 22px;
+      scroll-margin-top: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 28px 0 12px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .section-note {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(18, 36, 58, 0.88), rgba(9, 21, 38, 0.86));
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .kpi {
+      padding: 14px;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .kpi:hover {
+      transform: translateY(-2px);
+      border-color: rgba(216, 180, 106, 0.5);
+    }
+
+    .kpi-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      color: #bed0e4;
+      font-size: 12px;
+      min-height: 22px;
+    }
+
+    .kpi-value {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      margin-top: 12px;
+      font-family: "DIN Alternate", "Arial Narrow", Arial, sans-serif;
+      font-size: 31px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .kpi-value small {
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .kpi-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 22px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .tag.good { color: #baf8e7; background: rgba(52, 211, 180, 0.11); border-color: rgba(52, 211, 180, 0.25); }
+    .tag.warn { color: #ffe0a3; background: rgba(240, 163, 58, 0.12); border-color: rgba(240, 163, 58, 0.28); }
+    .tag.danger { color: #ffd0d0; background: rgba(239, 91, 91, 0.14); border-color: rgba(239, 91, 91, 0.3); }
+    .tag.neutral { color: #d6e2ef; background: rgba(143, 163, 186, 0.11); border-color: rgba(143, 163, 186, 0.22); }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 0.95fr;
+      gap: 14px;
+    }
+
+    .sub-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.22fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .panel {
+      padding: 16px;
+      min-height: 280px;
+    }
+
+    .panel.short { min-height: 214px; }
+    .panel.tall { min-height: 360px; }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .panel-desc {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .map {
+      position: relative;
+      height: 302px;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid rgba(176, 199, 224, 0.12);
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(145deg, rgba(21, 52, 78, 0.96), rgba(7, 18, 32, 0.98));
+      background-size: 36px 36px, 36px 36px, auto;
+    }
+
+    .map svg {
+      position: absolute;
+      inset: 24px 34px;
+      width: calc(100% - 68px);
+      height: calc(100% - 48px);
+      opacity: 0.62;
+      filter: drop-shadow(0 20px 26px rgba(0, 0, 0, 0.28));
+    }
+
+    .map-point {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 99px;
+      background: var(--cyan);
+      border: 2px solid rgba(255, 255, 255, 0.78);
+      box-shadow: 0 0 0 8px rgba(52, 211, 180, 0.11), 0 0 22px rgba(52, 211, 180, 0.42);
+      cursor: pointer;
+    }
+
+    .map-point.warn { background: var(--amber); box-shadow: 0 0 0 8px rgba(240, 163, 58, 0.12), 0 0 22px rgba(240, 163, 58, 0.46); }
+    .map-point.danger { background: var(--red); box-shadow: 0 0 0 8px rgba(239, 91, 91, 0.12), 0 0 22px rgba(239, 91, 91, 0.46); }
+
+    .map-tooltip {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      max-width: 260px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(5, 15, 29, 0.88);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .map-tooltip strong {
+      display: block;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 11px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 72px 1fr 48px;
+      gap: 10px;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .bar-name {
+      color: #d7e4f4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bar-track {
+      position: relative;
+      height: 10px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+    }
+
+    .bar-fill.warn { background: linear-gradient(90deg, var(--amber), #ffd28a); }
+    .bar-fill.danger { background: linear-gradient(90deg, var(--red), #ff9b9b); }
+
+    .bar-value {
+      color: #fff;
+      text-align: right;
+      font-family: "DIN Alternate", Arial, sans-serif;
+      font-weight: 700;
+    }
+
+    .alert-list {
+      display: grid;
+      gap: 10px;
+      max-height: 250px;
+      overflow: auto;
+      padding-right: 3px;
+    }
+
+    .alert {
+      display: grid;
+      grid-template-columns: 6px 1fr;
+      gap: 10px;
+      padding: 11px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(176, 199, 224, 0.11);
+    }
+
+    .alert::before {
+      content: "";
+      width: 6px;
+      border-radius: 99px;
+      background: var(--amber);
+    }
+
+    .alert.danger::before { background: var(--red); }
+    .alert.good::before { background: var(--cyan); }
+
+    .alert-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: #eff6ff;
+      font-weight: 700;
+    }
+
+    .alert-body {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .trend {
+      height: 160px;
+      width: 100%;
+      overflow: visible;
+    }
+
+    .axis-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .stack-row {
+      display: grid;
+      grid-template-columns: 62px 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 13px;
+      color: #d8e7f7;
+      font-size: 12px;
+    }
+
+    .stack {
+      display: flex;
+      height: 22px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .seg { height: 100%; }
+    .seg.market { background: var(--cyan); }
+    .seg.trip { background: var(--blue); }
+    .seg.office { background: rgba(216, 226, 239, 0.42); }
+    .seg.leave { background: var(--gold); }
+    .seg.abn { background: var(--red); }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend i {
+      width: 8px;
+      height: 8px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .data-table th {
+      color: #aebfd3;
+      text-align: left;
+      font-weight: 600;
+      padding: 9px 8px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(176, 199, 224, 0.09);
+      color: #e8f1fb;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .data-table tbody tr {
+      cursor: pointer;
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(216, 180, 106, 0.07);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid rgba(176, 199, 224, 0.11);
+      border-radius: 8px;
+    }
+
+    .wide-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 14px;
+    }
+
+    .triple-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .distribution {
+      display: flex;
+      align-items: end;
+      gap: 7px;
+      height: 170px;
+      padding: 14px 4px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hist-bar {
+      flex: 1;
+      min-width: 14px;
+      border-radius: 6px 6px 0 0;
+      background: linear-gradient(180deg, var(--blue), rgba(111, 181, 255, 0.35));
+      position: relative;
+    }
+
+    .hist-bar.warn { background: linear-gradient(180deg, var(--amber), rgba(240, 163, 58, 0.34)); }
+    .hist-bar.danger { background: linear-gradient(180deg, var(--red), rgba(239, 91, 91, 0.34)); }
+
+    .heatmap {
+      display: grid;
+      grid-template-columns: 100px repeat(15, minmax(18px, 1fr));
+      gap: 5px;
+      align-items: center;
+      font-size: 11px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .heat-name {
+      color: #dce8f6;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .day-cell {
+      height: 22px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .day-cell.market { background: rgba(52, 211, 180, 0.72); }
+    .day-cell.trip { background: rgba(111, 181, 255, 0.72); }
+    .day-cell.warn { background: rgba(240, 163, 58, 0.78); }
+    .day-cell.danger { background: rgba(239, 91, 91, 0.82); }
+    .day-cell.leave { background: rgba(216, 180, 106, 0.68); }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 14px;
+    }
+
+    .scatter {
+      position: relative;
+      height: 292px;
+      border: 1px solid rgba(176, 199, 224, 0.12);
+      border-radius: 8px;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .bubble {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      border-radius: 99px;
+      border: 1px solid rgba(255,255,255,0.38);
+      background: rgba(52, 211, 180, 0.22);
+      color: #fff;
+      font-size: 11px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.24);
+    }
+
+    .bubble.warn { background: rgba(240, 163, 58, 0.24); }
+    .bubble.danger { background: rgba(239, 91, 91, 0.28); }
+
+    .scatter-axis {
+      position: absolute;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .metric-matrix {
+      display: grid;
+      grid-template-columns: 86px repeat(5, 1fr);
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    .matrix-head,
+    .matrix-unit,
+    .matrix-cell {
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      padding: 4px;
+    }
+
+    .matrix-head {
+      color: #9eb2c8;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .matrix-unit {
+      justify-content: flex-start;
+      color: #d9e7f5;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .matrix-cell.good { background: rgba(52, 211, 180, 0.22); color: #c5fff0; }
+    .matrix-cell.warn { background: rgba(240, 163, 58, 0.22); color: #ffdfac; }
+    .matrix-cell.danger { background: rgba(239, 91, 91, 0.23); color: #ffd4d4; }
+
+    .exception-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.25fr;
+      gap: 14px;
+    }
+
+    .pareto {
+      display: grid;
+      gap: 12px;
+    }
+
+    .pareto-row {
+      display: grid;
+      grid-template-columns: 88px 1fr 42px;
+      gap: 10px;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 11px;
+      margin-top: 10px;
+    }
+
+    .time-item {
+      display: grid;
+      grid-template-columns: 68px 1fr;
+      gap: 10px;
+      color: #dce8f5;
+      font-size: 12px;
+    }
+
+    .time-item span:first-child {
+      color: var(--muted);
+    }
+
+    .person-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(460px, 100vw);
+      height: 100vh;
+      z-index: 20;
+      transform: translateX(105%);
+      transition: transform 0.25s ease;
+      background: rgba(5, 15, 29, 0.98);
+      border-left: 1px solid rgba(216, 180, 106, 0.34);
+      box-shadow: -22px 0 70px rgba(0,0,0,0.48);
+      padding: 22px;
+      overflow-y: auto;
+    }
+
+    .person-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .close-btn,
+    .export-btn {
+      border: 1px solid rgba(176, 199, 224, 0.18);
+      border-radius: 8px;
+      height: 34px;
+      padding: 0 12px;
+      color: #eef5ff;
+      background: rgba(255, 255, 255, 0.055);
+      cursor: pointer;
+    }
+
+    .close-btn { width: 34px; padding: 0; }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .profile-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .profile-label {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+
+    .profile-value {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin: 12px 0;
+    }
+
+    .cal-day {
+      min-height: 44px;
+      border-radius: 7px;
+      padding: 6px;
+      border: 1px solid rgba(255,255,255,0.07);
+      color: #fff;
+      font-size: 11px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .cal-day.market { background: rgba(52,211,180,0.21); }
+    .cal-day.trip { background: rgba(111,181,255,0.21); }
+    .cal-day.warn { background: rgba(240,163,58,0.24); }
+    .cal-day.danger { background: rgba(239,91,91,0.27); }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      padding: 18px 0 8px;
+    }
+
+    @media (max-width: 1280px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+      .dashboard-grid,
+      .sub-grid,
+      .triple-grid,
+      .wide-grid,
+      .comparison-grid,
+      .exception-grid { grid-template-columns: 1fr; }
+      .panel { min-height: auto; }
+    }
+
+    @media (max-width: 860px) {
+      .app {
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar {
+        order: 2;
+        position: relative;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .main {
+        order: 1;
+        padding: 16px;
+      }
+      .topbar { display: block; }
+      .status-strip { justify-content: flex-start; margin-top: 14px; }
+      h1 { font-size: 24px; }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .nav { grid-template-columns: repeat(2, 1fr); }
+      .heatmap { grid-template-columns: 88px repeat(15, 24px); }
+      .metric-matrix { grid-template-columns: 76px repeat(5, 76px); overflow-x: auto; }
+      .table-wrap { max-width: calc(100vw - 32px); }
+    }
+
+    @media (max-width: 560px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .filter-row { grid-template-columns: 1fr; }
+      .nav { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 64px 1fr 44px; }
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+
+    body.capture-hq .topbar,
+    body.capture-hq .main > .section:not(#hq),
+    body.capture-region .topbar,
+    body.capture-region .main > .section:not(#region),
+    body.capture-compare .topbar,
+    body.capture-compare .main > .section:not(#compare),
+    body.capture-exception .topbar,
+    body.capture-exception .main > .section:not(#exception) {
+      display: none;
+    }
+
+    body.capture-hq .section-title,
+    body.capture-region .section-title,
+    body.capture-compare .section-title,
+    body.capture-exception .section-title {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">管</div>
+        <div>
+          <div class="brand-title">市场投入管控</div>
+          <div class="brand-sub">Attendance & Market Governance</div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">日期范围</label>
+        <select class="filter-control">
+          <option>本月 2026-05</option>
+          <option>今日</option>
+          <option>本周</option>
+          <option>本季度</option>
+          <option>自定义</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">单位 / 大区</label>
+        <select class="filter-control">
+          <option>全部单位</option>
+          <option>总部部门</option>
+          <option>华东大区</option>
+          <option>华南大区</option>
+          <option>华北大区</option>
+          <option>西南大区</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-row">
+          <div>
+            <label class="filter-label">职务 / 层级</label>
+            <select class="filter-control">
+              <option>全部层级</option>
+              <option>班子成员</option>
+              <option>部门负责人</option>
+              <option>市场经理</option>
+              <option>一线人员</option>
+            </select>
+          </div>
+          <div>
+            <label class="filter-label">人员类型</label>
+            <select class="filter-control">
+              <option>全部</option>
+              <option>总部人员</option>
+              <option>大区人员</option>
+              <option>关键岗位</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">人员</label>
+        <input class="filter-control" value="全部人员" aria-label="人员筛选">
+      </div>
+      <div class="filter-group">
+        <div class="filter-row">
+          <div>
+            <label class="filter-label">异常类型</label>
+            <select class="filter-control">
+              <option>全部异常</option>
+              <option>长期未出差</option>
+              <option>未在市场</option>
+              <option>地点偏离</option>
+              <option>连续异常</option>
+            </select>
+          </div>
+          <div>
+            <label class="filter-label">是否达标</label>
+            <select class="filter-control">
+              <option>全部</option>
+              <option>达标</option>
+              <option>未达标</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="页面导航">
+        <a href="#overview">领导总览 <span>01</span></a>
+        <a href="#hq">总部出差 <span>02</span></a>
+        <a href="#region">大区在岗 <span>03</span></a>
+        <a href="#compare">公平对比 <span>04</span></a>
+        <a href="#exception">异常中心 <span>05</span></a>
+        <a href="#detail">人员明细 <span>06</span></a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar" id="overview">
+        <div>
+          <div class="eyebrow">领导驾驶舱 · 模拟数据 · 未接入真实接口</div>
+          <h1>考勤与市场投入管控驾驶舱</h1>
+          <div class="subhead">
+            把考勤、出差审批和市场区域数据翻译成管理判断：总部是否下沉、大区是否在市场、哪些单位和人员未达标、异常原因是什么、下一步应追踪谁。
+          </div>
+        </div>
+        <div class="status-strip">
+          <span class="chip"><i class="dot"></i> 数据截至 2026-05-15 09:30</span>
+          <span class="chip"><i class="dot warn"></i> 未闭环异常 43 条</span>
+          <span class="chip"><i class="dot gold"></i> 目标规则 18 条</span>
+        </div>
+      </header>
+
+      <section class="section">
+        <div class="kpi-grid">
+          <article class="card kpi" data-target="#hq">
+            <div class="kpi-head">总部出差率 <span class="tag warn">低于目标</span></div>
+            <div class="kpi-value">41.6<small>%</small></div>
+            <div class="kpi-meta"><span>目标 50%</span><span style="color:var(--amber)">-8.4pct</span></div>
+          </article>
+          <article class="card kpi" data-target="#region">
+            <div class="kpi-head">大区市场在岗率 <span class="tag good">接近达标</span></div>
+            <div class="kpi-value">73.2<small>%</small></div>
+            <div class="kpi-meta"><span>目标 75%</span><span style="color:var(--amber)">-1.8pct</span></div>
+          </article>
+          <article class="card kpi" data-target="#compare">
+            <div class="kpi-head">达标人数占比 <span class="tag warn">需关注</span></div>
+            <div class="kpi-value">68.5<small>%</small></div>
+            <div class="kpi-meta"><span>应考核 1,248 人</span><span>+2.1pct</span></div>
+          </article>
+          <article class="card kpi" data-target="#exception">
+            <div class="kpi-head">异常人数 <span class="tag danger">严重</span></div>
+            <div class="kpi-value">96<small>人</small></div>
+            <div class="kpi-meta"><span>涉及单位 12 个</span><span style="color:var(--red)">+18</span></div>
+          </article>
+          <article class="card kpi" data-target="#compare">
+            <div class="kpi-head">市场投入指数 <span class="tag neutral">综合评分</span></div>
+            <div class="kpi-value">78.4<small>分</small></div>
+            <div class="kpi-meta"><span>目标 85 分</span><span style="color:var(--amber)">-6.6</span></div>
+          </article>
+          <article class="card kpi" data-target="#exception">
+            <div class="kpi-head">异常率 <span class="tag danger">高于阈值</span></div>
+            <div class="kpi-value">14.7<small>%</small></div>
+            <div class="kpi-meta"><span>阈值 10%</span><span style="color:var(--red)">+4.7pct</span></div>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="card panel tall">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">市场位置分布</h3>
+                <div class="panel-desc">点击点位查看人员列表；红色代表地点偏离或非市场停留。</div>
+              </div>
+              <span class="tag danger">5 个高风险点</span>
+            </div>
+            <div class="map" id="mapBox">
+              <svg viewBox="0 0 540 320" aria-hidden="true">
+                <path d="M143 54 L236 39 L319 73 L402 52 L478 122 L438 220 L352 274 L247 260 L162 294 L75 232 L103 142 Z" fill="rgba(111,181,255,0.12)" stroke="rgba(214,230,255,0.38)" stroke-width="2"/>
+                <path d="M186 98 L270 84 L348 116 L396 168 L340 222 L266 207 L209 235 L148 185 Z" fill="rgba(52,211,180,0.08)" stroke="rgba(52,211,180,0.22)" stroke-width="1"/>
+                <path d="M286 80 L312 139 L376 160" fill="none" stroke="rgba(216,180,106,0.25)" stroke-width="2"/>
+                <path d="M202 238 L254 198 L322 226" fill="none" stroke="rgba(216,180,106,0.25)" stroke-width="2"/>
+              </svg>
+              <button class="map-point" style="left:62%;top:35%" data-tip="华东市场：在岗 186 人，异常 7 人，主要为地点偏离"></button>
+              <button class="map-point warn" style="left:48%;top:52%" data-tip="华中市场：在岗 122 人，异常 12 人，连续异常较多"></button>
+              <button class="map-point danger" style="left:72%;top:61%" data-tip="华南市场：在岗 168 人，异常 19 人，非市场停留高发"></button>
+              <button class="map-point" style="left:36%;top:66%" data-tip="西南市场：在岗 91 人，异常 4 人"></button>
+              <button class="map-point danger" style="left:57%;top:75%" data-tip="重点城市 B：审批目的地与实际定位不一致 8 人"></button>
+              <div class="map-tooltip" id="mapTip">
+                <strong>全局点位概览</strong>
+                市场有效人天 8,742；非市场停留 327 人天；地点偏离 68 人天。优先追踪华南市场和重点城市 B。
+              </div>
+            </div>
+          </article>
+
+          <article class="card panel tall">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">最需要关注的单位</h3>
+                <div class="panel-desc">按市场投入指数升序排序，不直接用人天数排名。</div>
+              </div>
+              <span class="tag warn">标准化</span>
+            </div>
+            <div class="bar-list">
+              <div class="bar-row"><span class="bar-name">华南一区</span><span class="bar-track"><i class="bar-fill danger" style="width:58%"></i></span><span class="bar-value">58.0</span></div>
+              <div class="bar-row"><span class="bar-name">总部营销部</span><span class="bar-track"><i class="bar-fill danger" style="width:61%"></i></span><span class="bar-value">61.2</span></div>
+              <div class="bar-row"><span class="bar-name">西北大区</span><span class="bar-track"><i class="bar-fill warn" style="width:66%"></i></span><span class="bar-value">66.4</span></div>
+              <div class="bar-row"><span class="bar-name">华中二部</span><span class="bar-track"><i class="bar-fill warn" style="width:69%"></i></span><span class="bar-value">69.1</span></div>
+              <div class="bar-row"><span class="bar-name">总部产品部</span><span class="bar-track"><i class="bar-fill warn" style="width:71%"></i></span><span class="bar-value">71.0</span></div>
+              <div class="bar-row"><span class="bar-name">华东一区</span><span class="bar-track"><i class="bar-fill" style="width:86%"></i></span><span class="bar-value">86.5</span></div>
+            </div>
+          </article>
+
+          <article class="card panel tall">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">关键风险提示</h3>
+                <div class="panel-desc">只突出需要管理动作的异常，正常数据降噪。</div>
+              </div>
+              <span class="tag danger">今日 16 条</span>
+            </div>
+            <div class="alert-list">
+              <div class="alert danger">
+                <div>
+                  <div class="alert-title"><span>华南一区整体异常</span><span>严重</span></div>
+                  <div class="alert-body">目标达成率 62%，异常率 26%，连续 3 天未改善；责任单位负责人需说明。</div>
+                </div>
+              </div>
+              <div class="alert danger">
+                <div>
+                  <div class="alert-title"><span>班子成员未达标</span><span>5 人</span></div>
+                  <div class="alert-body">本月市场/出差要求未达到 80%，其中 2 人连续 10 个工作日无市场记录。</div>
+                </div>
+              </div>
+              <div class="alert">
+                <div>
+                  <div class="alert-title"><span>地点偏离高发</span><span>68 人天</span></div>
+                  <div class="alert-body">审批目的地与考勤城市不一致，集中在重点城市 B、C。</div>
+                </div>
+              </div>
+              <div class="alert good">
+                <div>
+                  <div class="alert-title"><span>华东一区持续达标</span><span>86.5 分</span></div>
+                  <div class="alert-body">目标达成率、达标人数占比均高于目标，可作为对标样板。</div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="sub-grid">
+          <article class="card panel short">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">总部出差率趋势</h3>
+                <div class="panel-desc">实际值与 50% 目标线对比。</div>
+              </div>
+              <span class="tag warn">未达标</span>
+            </div>
+            <svg class="trend" viewBox="0 0 420 160">
+              <line x1="20" y1="64" x2="400" y2="64" stroke="rgba(216,180,106,0.62)" stroke-dasharray="5 6"/>
+              <polyline points="20,104 74,92 128,86 182,73 236,82 290,76 344,65 400,78" fill="none" stroke="#6fb5ff" stroke-width="4" stroke-linecap="round"/>
+              <polyline points="20,122 74,110 128,100 182,96 236,86 290,88 344,81 400,92" fill="none" stroke="#ef5b5b" stroke-width="3" stroke-linecap="round"/>
+              <g fill="#6fb5ff"><circle cx="20" cy="104" r="4"/><circle cx="74" cy="92" r="4"/><circle cx="128" cy="86" r="4"/><circle cx="182" cy="73" r="4"/><circle cx="236" cy="82" r="4"/><circle cx="290" cy="76" r="4"/><circle cx="344" cy="65" r="4"/><circle cx="400" cy="78" r="4"/></g>
+            </svg>
+            <div class="axis-labels"><span>5/1</span><span>5/5</span><span>5/10</span><span>5/15</span></div>
+          </article>
+
+          <article class="card panel short">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">大区人员状态结构</h3>
+                <div class="panel-desc">市场/出差/办公室/请假/异常 100% 堆叠。</div>
+              </div>
+            </div>
+            <div class="stack-row"><span>华东</span><div class="stack"><i class="seg market" style="width:72%"></i><i class="seg trip" style="width:8%"></i><i class="seg office" style="width:11%"></i><i class="seg leave" style="width:4%"></i><i class="seg abn" style="width:5%"></i></div></div>
+            <div class="stack-row"><span>华南</span><div class="stack"><i class="seg market" style="width:58%"></i><i class="seg trip" style="width:9%"></i><i class="seg office" style="width:16%"></i><i class="seg leave" style="width:5%"></i><i class="seg abn" style="width:12%"></i></div></div>
+            <div class="stack-row"><span>华北</span><div class="stack"><i class="seg market" style="width:69%"></i><i class="seg trip" style="width:7%"></i><i class="seg office" style="width:13%"></i><i class="seg leave" style="width:4%"></i><i class="seg abn" style="width:7%"></i></div></div>
+            <div class="legend"><span><i style="background:var(--cyan)"></i>市场</span><span><i style="background:var(--blue)"></i>出差</span><span><i style="background:#9fb3c7"></i>办公室</span><span><i style="background:var(--gold)"></i>请假</span><span><i style="background:var(--red)"></i>异常</span></div>
+          </article>
+
+          <article class="card panel short">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">异常明细快照</h3>
+                <div class="panel-desc">点击人员进入个人画像。</div>
+              </div>
+              <button class="export-btn">导出清单</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>人员</th><th>单位</th><th>日期</th><th>异常</th><th>等级</th></tr></thead>
+                <tbody>
+                  <tr class="person-link" data-person="张*"><td>张*</td><td>华南一区</td><td>05-14</td><td>未在市场</td><td><span class="tag danger">严重</span></td></tr>
+                  <tr class="person-link" data-person="李*"><td>李*</td><td>总部营销部</td><td>05-13</td><td>长期未出差</td><td><span class="tag warn">预警</span></td></tr>
+                  <tr class="person-link" data-person="王*"><td>王*</td><td>西北大区</td><td>05-13</td><td>地点偏离</td><td><span class="tag danger">严重</span></td></tr>
+                  <tr class="person-link" data-person="赵*"><td>赵*</td><td>华中二部</td><td>05-12</td><td>连续异常</td><td><span class="tag warn">预警</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="hq">
+        <div class="section-title">
+          <h2>总部出差监控</h2>
+          <div class="section-note">判断总部人员是否真正下沉到市场和一线。</div>
+        </div>
+        <div class="triple-grid">
+          <article class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">总部各部门出差率排行</h3>
+                <div class="panel-desc">出差人天 / 总部可用人天。</div>
+              </div>
+              <span class="tag warn">目标 50%</span>
+            </div>
+            <div class="bar-list">
+              <div class="bar-row"><span class="bar-name">销售管理</span><span class="bar-track"><i class="bar-fill" style="width:64%"></i></span><span class="bar-value">64%</span></div>
+              <div class="bar-row"><span class="bar-name">客户成功</span><span class="bar-track"><i class="bar-fill" style="width:56%"></i></span><span class="bar-value">56%</span></div>
+              <div class="bar-row"><span class="bar-name">产品中心</span><span class="bar-track"><i class="bar-fill warn" style="width:43%"></i></span><span class="bar-value">43%</span></div>
+              <div class="bar-row"><span class="bar-name">营销支持</span><span class="bar-track"><i class="bar-fill danger" style="width:35%"></i></span><span class="bar-value">35%</span></div>
+              <div class="bar-row"><span class="bar-name">职能管理</span><span class="bar-track"><i class="bar-fill danger" style="width:28%"></i></span><span class="bar-value">28%</span></div>
+            </div>
+          </article>
+          <article class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">人员出差天数分布</h3>
+                <div class="panel-desc">左侧低天数组为长期未出差风险。</div>
+              </div>
+            </div>
+            <div class="distribution">
+              <i class="hist-bar danger" style="height:86%"></i>
+              <i class="hist-bar warn" style="height:68%"></i>
+              <i class="hist-bar warn" style="height:54%"></i>
+              <i class="hist-bar" style="height:76%"></i>
+              <i class="hist-bar" style="height:62%"></i>
+              <i class="hist-bar" style="height:45%"></i>
+              <i class="hist-bar" style="height:31%"></i>
+              <i class="hist-bar" style="height:22%"></i>
+            </div>
+            <div class="axis-labels"><span>0天</span><span>3天</span><span>6天</span><span>10天+</span></div>
+          </article>
+          <article class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">长期未出差人员</h3>
+                <div class="panel-desc">连续 N 个工作日无出差，或月度出差率低于规则目标。</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>人员</th><th>部门</th><th>连续无出差</th><th>目标差距</th></tr></thead>
+                <tbody>
+                  <tr class="person-link" data-person="李*"><td>李*</td><td>营销支持</td><td>12 天</td><td><span class="tag danger">-6 天</span></td></tr>
+                  <tr class="person-link" data-person="陈*"><td>产品中心</td><td>10 天</td><td><span class="tag warn">-4 天</span></td></tr>
+                  <tr class="person-link" data-person="周*"><td>职能管理</td><td>9 天</td><td><span class="tag warn">-3 天</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="region">
+        <div class="section-title">
+          <h2>大区市场在岗监控</h2>
+          <div class="section-note">判断大区人员是否真正集中在负责市场。</div>
+        </div>
+        <div class="wide-grid">
+          <article class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">单位 × 日期市场状态热力矩阵</h3>
+                <div class="panel-desc">红色和琥珀色代表应优先追踪的异常。</div>
+              </div>
+            </div>
+            <div class="heatmap" aria-label="市场状态热力矩阵">
+              <span class="matrix-head">单位</span><span class="matrix-head">1</span><span class="matrix-head">2</span><span class="matrix-head">3</span><span class="matrix-head">4</span><span class="matrix-head">5</span><span class="matrix-head">6</span><span class="matrix-head">7</span><span class="matrix-head">8</span><span class="matrix-head">9</span><span class="matrix-head">10</span><span class="matrix-head">11</span><span class="matrix-head">12</span><span class="matrix-head">13</span><span class="matrix-head">14</span><span class="matrix-head">15</span>
+              <span class="heat-name">华东一区</span><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell trip"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell leave"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell trip"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i>
+              <span class="heat-name">华南一区</span><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell danger"></i><i class="day-cell danger"></i><i class="day-cell market"></i><i class="day-cell leave"></i><i class="day-cell warn"></i><i class="day-cell danger"></i><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell danger"></i><i class="day-cell danger"></i><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell danger"></i>
+              <span class="heat-name">华北大区</span><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell trip"></i><i class="day-cell leave"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell warn"></i>
+              <span class="heat-name">西北大区</span><i class="day-cell warn"></i><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell market"></i><i class="day-cell danger"></i><i class="day-cell leave"></i><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell market"></i><i class="day-cell danger"></i><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell danger"></i>
+              <span class="heat-name">西南大区</span><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell trip"></i><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell leave"></i><i class="day-cell market"></i><i class="day-cell trip"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell warn"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i><i class="day-cell market"></i>
+            </div>
+            <div class="legend"><span><i style="background:var(--cyan)"></i>市场</span><span><i style="background:var(--blue)"></i>出差</span><span><i style="background:var(--amber)"></i>预警</span><span><i style="background:var(--red)"></i>严重</span><span><i style="background:var(--gold)"></i>请假</span></div>
+          </article>
+
+          <article class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">非市场停留异常</h3>
+                <div class="panel-desc">工作日停留在非市场区域，且无合规豁免。</div>
+              </div>
+              <span class="tag danger">327 人天</span>
+            </div>
+            <div class="bar-list">
+              <div class="bar-row"><span class="bar-name">华南一区</span><span class="bar-track"><i class="bar-fill danger" style="width:88%"></i></span><span class="bar-value">88</span></div>
+              <div class="bar-row"><span class="bar-name">西北大区</span><span class="bar-track"><i class="bar-fill danger" style="width:72%"></i></span><span class="bar-value">72</span></div>
+              <div class="bar-row"><span class="bar-name">华中二部</span><span class="bar-track"><i class="bar-fill warn" style="width:56%"></i></span><span class="bar-value">56</span></div>
+              <div class="bar-row"><span class="bar-name">华北大区</span><span class="bar-track"><i class="bar-fill warn" style="width:43%"></i></span><span class="bar-value">43</span></div>
+              <div class="bar-row"><span class="bar-name">西南大区</span><span class="bar-track"><i class="bar-fill" style="width:31%"></i></span><span class="bar-value">31</span></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="compare">
+        <div class="section-title">
+          <h2>单位公平对比</h2>
+          <div class="section-note">用可用人天归一化、达成率、达标占比和异常率比较，避免单位人数差异误判。</div>
+        </div>
+        <div class="comparison-grid">
+          <article class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">市场投入指数排名</h3>
+                <div class="panel-desc">40% 目标达成率 + 25% 市场在岗率 + 20% 达标人数占比 - 15% 异常率。</div>
+              </div>
+              <span class="tag neutral">权重可配</span>
+            </div>
+            <div class="bar-list">
+              <div class="bar-row"><span class="bar-name">华东一区</span><span class="bar-track"><i class="bar-fill" style="width:92%"></i></span><span class="bar-value">92</span></div>
+              <div class="bar-row"><span class="bar-name">西南大区</span><span class="bar-track"><i class="bar-fill" style="width:84%"></i></span><span class="bar-value">84</span></div>
+              <div class="bar-row"><span class="bar-name">华北大区</span><span class="bar-track"><i class="bar-fill" style="width:81%"></i></span><span class="bar-value">81</span></div>
+              <div class="bar-row"><span class="bar-name">华中二部</span><span class="bar-track"><i class="bar-fill warn" style="width:69%"></i></span><span class="bar-value">69</span></div>
+              <div class="bar-row"><span class="bar-name">西北大区</span><span class="bar-track"><i class="bar-fill warn" style="width:66%"></i></span><span class="bar-value">66</span></div>
+              <div class="bar-row"><span class="bar-name">华南一区</span><span class="bar-track"><i class="bar-fill danger" style="width:58%"></i></span><span class="bar-value">58</span></div>
+            </div>
+          </article>
+          <article class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">有效人数 × 市场在岗率气泡图</h3>
+                <div class="panel-desc">气泡越大异常人数越多；用于识别规模差异下的真实风险。</div>
+              </div>
+            </div>
+            <div class="scatter">
+              <span class="scatter-axis" style="left:12px;top:10px">市场在岗率</span>
+              <span class="scatter-axis" style="right:12px;bottom:10px">有效人数</span>
+              <span class="bubble" style="left:68%;top:42%;width:52px;height:52px">华东</span>
+              <span class="bubble warn" style="left:36%;top:58%;width:72px;height:72px">西北</span>
+              <span class="bubble danger" style="left:52%;top:68%;width:92px;height:92px">华南</span>
+              <span class="bubble" style="left:24%;top:36%;width:42px;height:42px">西南</span>
+              <span class="bubble warn" style="left:76%;top:54%;width:64px;height:64px">华中</span>
+            </div>
+          </article>
+        </div>
+        <article class="card panel" style="margin-top:14px">
+          <div class="panel-head">
+            <div>
+              <h3 class="panel-title">单位 × 指标热力矩阵</h3>
+              <div class="panel-desc">同类型单位分组对比，必要时可扩展为标准分或百分位排名。</div>
+            </div>
+          </div>
+          <div class="metric-matrix">
+            <span class="matrix-head">单位</span><span class="matrix-head">目标达成</span><span class="matrix-head">在岗率</span><span class="matrix-head">达标占比</span><span class="matrix-head">异常率</span><span class="matrix-head">人均天数</span>
+            <span class="matrix-unit">华东一区</span><span class="matrix-cell good">96%</span><span class="matrix-cell good">82%</span><span class="matrix-cell good">88%</span><span class="matrix-cell good">5%</span><span class="matrix-cell good">13.8</span>
+            <span class="matrix-unit">华南一区</span><span class="matrix-cell danger">62%</span><span class="matrix-cell danger">58%</span><span class="matrix-cell warn">61%</span><span class="matrix-cell danger">26%</span><span class="matrix-cell warn">8.1</span>
+            <span class="matrix-unit">西北大区</span><span class="matrix-cell warn">74%</span><span class="matrix-cell warn">66%</span><span class="matrix-cell warn">67%</span><span class="matrix-cell danger">21%</span><span class="matrix-cell warn">9.0</span>
+            <span class="matrix-unit">西南大区</span><span class="matrix-cell good">88%</span><span class="matrix-cell good">76%</span><span class="matrix-cell good">82%</span><span class="matrix-cell good">8%</span><span class="matrix-cell good">12.2</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="section" id="exception">
+        <div class="section-title">
+          <h2>异常中心</h2>
+          <div class="section-note">异常必须下钻到人、日期、地点、状态和偏离原因，支持闭环追责。</div>
+        </div>
+        <div class="exception-grid">
+          <article class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">异常类型帕累托</h3>
+                <div class="panel-desc">优先治理占比最高且影响最大的异常。</div>
+              </div>
+              <span class="tag danger">异常 496 条</span>
+            </div>
+            <div class="pareto">
+              <div class="pareto-row"><span>未在市场</span><span class="bar-track"><i class="bar-fill danger" style="width:88%"></i></span><span class="bar-value">176</span></div>
+              <div class="pareto-row"><span>长期未出差</span><span class="bar-track"><i class="bar-fill danger" style="width:70%"></i></span><span class="bar-value">141</span></div>
+              <div class="pareto-row"><span>地点偏离</span><span class="bar-track"><i class="bar-fill warn" style="width:48%"></i></span><span class="bar-value">96</span></div>
+              <div class="pareto-row"><span>连续异常</span><span class="bar-track"><i class="bar-fill warn" style="width:34%"></i></span><span class="bar-value">68</span></div>
+              <div class="pareto-row"><span>状态异常</span><span class="bar-track"><i class="bar-fill" style="width:18%"></i></span><span class="bar-value">15</span></div>
+            </div>
+            <div class="timeline">
+              <div class="time-item"><span>05-15</span><strong>华南一区连续异常升级为严重，未闭环 19 条。</strong></div>
+              <div class="time-item"><span>05-14</span><strong>总部营销部 7 人月度出差率低于 30%。</strong></div>
+              <div class="time-item"><span>05-13</span><strong>重点城市 B 出现审批地与定位地偏离。</strong></div>
+            </div>
+          </article>
+
+          <article class="card panel" id="detail">
+            <div class="panel-head">
+              <div>
+                <h3 class="panel-title">异常明细清单</h3>
+                <div class="panel-desc">点击任一行打开人员每日画像，可导出并流转问责。</div>
+              </div>
+              <button class="export-btn">导出异常明细</button>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr><th>人员</th><th>单位</th><th>层级</th><th>日期</th><th>地点</th><th>状态</th><th>异常原因</th><th>闭环</th></tr>
+                </thead>
+                <tbody>
+                  <tr class="person-link" data-person="张*"><td>张*</td><td>华南一区</td><td>市场经理</td><td>05-14</td><td>总部城市</td><td><span class="tag danger">未在市场</span></td><td>工作日停留非市场区域</td><td>否</td></tr>
+                  <tr class="person-link" data-person="王*"><td>王*</td><td>西北大区</td><td>负责人</td><td>05-13</td><td>B 市</td><td><span class="tag danger">地点偏离</span></td><td>审批 A 市，定位 B 市</td><td>否</td></tr>
+                  <tr class="person-link" data-person="李*"><td>李*</td><td>总部营销部</td><td>班子成员</td><td>05-13</td><td>总部</td><td><span class="tag warn">长期未出差</span></td><td>连续 12 个工作日无出差</td><td>否</td></tr>
+                  <tr class="person-link" data-person="赵*"><td>赵*</td><td>华中二部</td><td>市场经理</td><td>05-12</td><td>办公区</td><td><span class="tag warn">连续异常</span></td><td>连续 3 天未达到预期状态</td><td>处理中</td></tr>
+                  <tr class="person-link" data-person="孙*"><td>孙*</td><td>总部产品部</td><td>关键岗位</td><td>05-11</td><td>总部</td><td><span class="tag warn">应出差未出差</span></td><td>月度目标差 4 天</td><td>否</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <p class="footer-note">
+        说明：本页面为高保真静态原型，所有人员姓名均已脱敏，数据为模拟数据。真实落地时建议由数据库或 ETL 预计算每日市场状态、异常结果和闭环状态，SmartBI 负责统一指标口径、筛选联动、下钻跳转和权限过滤。
+      </p>
+    </main>
+  </div>
+
+  <aside class="person-drawer" id="drawer" aria-label="人员每日明细">
+    <div class="drawer-head">
+      <div>
+        <div class="eyebrow">个人画像 / 每日轨迹</div>
+        <h2 id="drawerName">张*</h2>
+        <div class="panel-desc">姓名已脱敏，仅用于演示。真实系统按组织权限展示。</div>
+      </div>
+      <button class="close-btn" id="closeDrawer" aria-label="关闭">×</button>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-item"><div class="profile-label">所属单位</div><div class="profile-value">华南一区</div></div>
+      <div class="profile-item"><div class="profile-label">职务层级</div><div class="profile-value">市场经理</div></div>
+      <div class="profile-item"><div class="profile-label">本月市场天数</div><div class="profile-value">8 / 12 天</div></div>
+      <div class="profile-item"><div class="profile-label">目标达成率</div><div class="profile-value" style="color:var(--amber)">66.7%</div></div>
+      <div class="profile-item"><div class="profile-label">异常次数</div><div class="profile-value" style="color:var(--red)">4 次</div></div>
+      <div class="profile-item"><div class="profile-label">闭环状态</div><div class="profile-value">未闭环</div></div>
+    </div>
+    <div class="card panel" style="box-shadow:none">
+      <div class="panel-head">
+        <div>
+          <h3 class="panel-title">月度出差 / 市场日历</h3>
+          <div class="panel-desc">市场、出差、预警、严重异常按日标记。</div>
+        </div>
+      </div>
+      <div class="calendar">
+        <div class="cal-day market">1<br>市场</div><div class="cal-day market">2<br>市场</div><div class="cal-day trip">3<br>出差</div><div class="cal-day warn">4<br>预警</div><div class="cal-day danger">5<br>偏离</div><div class="cal-day">6<br>休</div><div class="cal-day">7<br>休</div>
+        <div class="cal-day market">8<br>市场</div><div class="cal-day market">9<br>市场</div><div class="cal-day warn">10<br>非市场</div><div class="cal-day market">11<br>市场</div><div class="cal-day danger">12<br>异常</div><div class="cal-day danger">13<br>异常</div><div class="cal-day danger">14<br>异常</div>
+        <div class="cal-day warn">15<br>预警</div><div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div><div class="cal-day">20</div><div class="cal-day">21</div>
+      </div>
+    </div>
+    <div class="card panel" style="box-shadow:none;margin-top:12px">
+      <div class="panel-head">
+        <div>
+          <h3 class="panel-title">审批目的地 vs 实际定位</h3>
+          <div class="panel-desc">示例：05-14 要求在负责市场，实际定位为总部城市。</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>日期</th><th>审批/要求</th><th>实际定位</th><th>判断</th></tr></thead>
+          <tbody>
+            <tr><td>05-12</td><td>A 市市场</td><td>A 市</td><td><span class="tag good">正常</span></td></tr>
+            <tr><td>05-13</td><td>A 市市场</td><td>办公区</td><td><span class="tag warn">非市场</span></td></tr>
+            <tr><td>05-14</td><td>A 市市场</td><td>总部城市</td><td><span class="tag danger">严重</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    const drawer = document.getElementById('drawer');
+    const drawerName = document.getElementById('drawerName');
+    document.querySelectorAll('.person-link').forEach(row => {
+      row.addEventListener('click', () => {
+        drawerName.textContent = row.dataset.person || row.cells[0].textContent;
+        drawer.classList.add('open');
+      });
+    });
+    document.getElementById('closeDrawer').addEventListener('click', () => drawer.classList.remove('open'));
+
+    document.querySelectorAll('.kpi').forEach(card => {
+      card.addEventListener('click', () => {
+        const target = document.querySelector(card.dataset.target);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    const tip = document.getElementById('mapTip');
+    document.querySelectorAll('.map-point').forEach(point => {
+      point.addEventListener('click', () => {
+        tip.innerHTML = '<strong>点位人员列表</strong>' + point.dataset.tip + '<br>点击后可跳转至该地点异常明细。';
+      });
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    if (view) document.body.classList.add('capture-' + view);
+
+    if (params.get('drawer') === '1') {
+      drawer.classList.add('open');
+      setTimeout(() => {
+        const target = document.querySelector(view ? '#'+view : '#exception');
+        if (target) target.scrollIntoView({ behavior: 'auto', block: 'start' });
+      }, 50);
+    }
+  </script>
+</body>
+</html>
